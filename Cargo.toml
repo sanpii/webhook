@@ -5,3 +5,11 @@ authors = ["Sanpi <sanpi@homecomputing.fr>"]
 edition = "2018"
 
 [dependencies]
+actix-web = "3.3"
+dotenv = "0.15"
+env_logger = "0.8"
+log = "0.4"
+serde = "1.0"
+serde_yaml = "0.8"
+structopt = "0.3"
+thiserror = "1.0.23"
