@@ -135,31 +135,8 @@
       source: payload
       name: binary
       envname: ENV_VARIABLE
-      base64encode: true
+      base64encode: false
   include-command-output-in-response: true
-
--
-  id: scalr
-  execute-command: /home/adnan/redeploy-go-webhook.sh
-  command-working-directory: /home/adnan/go
-  include-command-output-in-response: true
-  trigger-rule:
-    match:
-      type: scalr-signature
-      secret: "Scalr-provided signing key"
-      parameter:
-        source: url
-        name: token
-  pass-environment-to-command:
-    -
-      envname: EVENT_NAME
-      source: payload
-      name: eventName
-    -
-      envname: SERVER_HOSTNAME
-      source: payload
-      name: data.SCALR_SERVER_HOSTNAME
-
 
 -
   id: travis
