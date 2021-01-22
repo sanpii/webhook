@@ -81,7 +81,7 @@ async fn hooks(
         None => return Err(Error::NotFound(id.to_string())),
     };
 
-    log::debug!("Found hook '{}'", hook.id);
+    log::info!("Found hook '{}'", hook.id);
 
     let content_type = hook
         .incoming_payload_content_type
