@@ -40,6 +40,7 @@ async fn main() -> crate::Result<()> {
     actix_web::HttpServer::new(move || {
         actix_web::App::new()
             .data(data.clone())
+            .service(index)
             .service(get)
             .service(post)
     })
@@ -48,6 +49,11 @@ async fn main() -> crate::Result<()> {
     .await?;
 
     Ok(())
+}
+
+#[actix_web::get("/")]
+async fn index() -> String {
+    String::new()
 }
 
 #[actix_web::get("/hooks/{id}")]
