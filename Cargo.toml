@@ -3,6 +3,7 @@ name = "webhook"
 version = "0.1.0"
 authors = ["Sanpi <sanpi@homecomputing.fr>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
 actix-web = "3.3"
