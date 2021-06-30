@@ -208,6 +208,7 @@
 
 -
   id: string-argument
+  user: git
   execute-command: /home/adnan/redeploy-go-webhook.sh
   command-working-directory: /home/adnan/go
   pass-arguments-to-command:

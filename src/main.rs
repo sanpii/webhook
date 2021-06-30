@@ -168,6 +168,22 @@ async fn hooks(
         files_to_delete.push(path);
     }
 
+    #[cfg(not(unix))]
+    log::warn!("User option is only supported on unix platform");
+
+    #[cfg(unix)]
+    if let Some(username) = &hook.user {
+        use std::os::unix::process::CommandExt;
+
+        match users::get_user_by_name(&username) {
+            Some(user) => {
+                command.uid(user.uid());
+                command.gid(user.primary_group_id());
+            }
+            None => log::warn!("Unknow user {}", username),
+        }
+    }
+
     log::debug!("Execute {:?}", command);
 
     let output = command.output()?;

@@ -2,6 +2,7 @@
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) struct Hook {
     pub id: String,
+    pub user: Option<String>,
     pub execute_command: String,
     pub command_working_directory: Option<String>,
     #[serde(default)]
