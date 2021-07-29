@@ -92,14 +92,15 @@ async fn hooks(
     let content_type = hook
         .incoming_payload_content_type
         .clone()
-        .or(req
-            .headers()
-            .get("content-type")
-            .map(|x| x.to_str().unwrap().split(';').nth(0).unwrap().to_string()))
-        .unwrap_or("text/plain".to_string());
+        .or_else(|| {
+            req.headers()
+                .get("content-type")
+                .map(|x| x.to_str().unwrap().split(';').next().unwrap().to_string())
+        })
+        .unwrap_or_else(|| "text/plain".to_string());
     let payload = Payload::new(&content_type, payload).await?;
 
-    if !should_trigger(&hook, &payload, &req)? {
+    if !should_trigger(hook, &payload, &req)? {
         let status_code = hook
             .trigger_rule_mismatch_http_response_code
             .unwrap_or(actix_web::http::StatusCode::FORBIDDEN);
@@ -114,7 +115,7 @@ async fn hooks(
 
     for arg in &hook.pass_arguments_to_command {
         let value = match arg {
-            Argument::Partial(param) => get_parameter(&param, &payload, &req)?,
+            Argument::Partial(param) => get_parameter(param, &payload, &req)?,
             Argument::Entire { source } => match source {
                 Source::EntireHeader => {
                     let headers = req
@@ -141,7 +142,7 @@ async fn hooks(
 
     for env in &hook.pass_environment_to_command {
         let envname = env.envname();
-        let value = get_parameter(&env, &payload, &req)?;
+        let value = get_parameter(env, &payload, &req)?;
 
         command.env(envname, value);
     }
@@ -153,10 +154,10 @@ async fn hooks(
         let dir = hook
             .command_working_directory
             .clone()
-            .unwrap_or("/tmp".to_string());
+            .unwrap_or_else(|| "/tmp".to_string());
         let path = format!("{}/{}", dir, filename);
 
-        let value = get_parameter(&file, &payload, &req)?;
+        let value = get_parameter(file, &payload, &req)?;
         let contents = if file.base64encode() {
             base64::decode(value)?
         } else {
@@ -187,7 +188,7 @@ async fn hooks(
     log::debug!("Execute {:?}", command);
 
     let output = command.output()?;
-    let response = response(&hook, &output);
+    let response = response(hook, &output);
 
     for file in files_to_delete {
         std::fs::remove_file(file)?;
@@ -220,18 +221,18 @@ fn get_parameter(
         Source::Header => req
             .headers()
             .get(&name)
-            .ok_or(Error::MissingArgument(name.clone()))?
+            .ok_or_else(|| Error::MissingArgument(name.clone()))?
             .to_str()?
             .to_string(),
         Source::Payload => payload
             .value(&name)?
-            .ok_or(Error::MissingArgument(name.clone()))?,
-        Source::String => name.clone(),
+            .ok_or_else(|| Error::MissingArgument(name.clone()))?,
+        Source::String => name,
         Source::Request => match name.as_str() {
             "method" => req.method().as_str().to_string(),
             "remote-addr" => req
                 .peer_addr()
-                .ok_or(Error::MissingArgument(name.clone()))?
+                .ok_or_else(|| Error::MissingArgument(name.clone()))?
                 .ip()
                 .to_string(),
             _ => return Err(Error::UnsupportedRequestKey(name)),
@@ -240,8 +241,8 @@ fn get_parameter(
             let mut query = form_urlencoded::parse(req.query_string().as_bytes());
 
             query
-                .find(|(k, _)| k.to_owned() == name)
-                .ok_or(Error::MissingArgument(name.clone()))?
+                .find(|(k, _)| *k == name)
+                .ok_or_else(|| Error::MissingArgument(name.clone()))?
                 .1
                 .into_owned()
         }
@@ -276,19 +277,17 @@ fn response(hook: &Hook, output: &std::process::Output) -> actix_web::HttpRespon
                 &String::from_utf8(output.stdout.to_vec())
                     .unwrap_or_else(|_| "Invalid UTF8 output".to_string()),
             )
+        } else if hook.include_command_output_in_response_on_error {
+            response.set_header(
+                actix_web::http::header::CONTENT_TYPE,
+                "text/plain; charset=utf-8",
+            );
+            response.body(
+                &String::from_utf8(output.stderr.to_vec())
+                    .unwrap_or_else(|_| "Invalid UTF8 output".to_string()),
+            )
         } else {
-            if hook.include_command_output_in_response_on_error {
-                response.set_header(
-                    actix_web::http::header::CONTENT_TYPE,
-                    "text/plain; charset=utf-8",
-                );
-                response.body(
-                    &String::from_utf8(output.stderr.to_vec())
-                        .unwrap_or_else(|_| "Invalid UTF8 output".to_string()),
-                )
-            } else {
-                response.body("Error occurred while executing the hook's command. Please check your logs for more details.")
-            }
+            response.body("Error occurred while executing the hook's command. Please check your logs for more details.")
         }
     } else {
         response.body(hook.response_message.clone().unwrap_or_default())
@@ -302,15 +301,15 @@ fn should_trigger(
     payload: &Payload,
     req: &actix_web::HttpRequest,
 ) -> crate::Result<bool> {
-    if !hook.http_methods.is_empty() && !hook.http_methods.contains(&req.method()) {
+    if !hook.http_methods.is_empty() && !hook.http_methods.contains(req.method()) {
         dbg!(&hook.http_methods, &req.method());
         return Ok(false);
     }
 
     if let Some(trigger_rule) = &hook.trigger_rule {
         match trigger_rule {
-            TriggerRules::Match(r#match) => is_match(&r#match, payload, req),
-            TriggerRules::Not(r#match) => is_match(&r#match, payload, req).map(|x| !x),
+            TriggerRules::Match(r#match) => is_match(r#match, payload, req),
+            TriggerRules::Not(r#match) => is_match(r#match, payload, req).map(|x| !x),
             TriggerRules::And(matches) => matches
                 .iter()
                 .try_fold(true, |acc, x| Ok(acc && is_match(x, payload, req)?)),
@@ -331,25 +330,25 @@ fn is_match(
     req: &actix_web::HttpRequest,
 ) -> crate::Result<bool> {
     let is_match = match r#match {
-        Match::Value { value, parameter } => &get_parameter(&parameter, &payload, &req)? == value,
+        Match::Value { value, parameter } => &get_parameter(parameter, payload, req)? == value,
         Match::Regex { regex, parameter } => {
             let re = regex::Regex::new(regex)?;
-            let value = get_parameter(&parameter, &payload, req)?;
+            let value = get_parameter(parameter, payload, req)?;
 
             re.is_match(&value)
         }
         Match::PayloadHmacSha1 { secret, parameter } => hmac(
             ring::hmac::HMAC_SHA1_FOR_LEGACY_USE_ONLY,
-            &secret,
-            &parameter,
-            &payload,
-            &req,
+            secret,
+            parameter,
+            payload,
+            req,
         )?,
         Match::PayloadHmacSha256 { secret, parameter } => {
-            hmac(ring::hmac::HMAC_SHA256, &secret, &parameter, &payload, &req)?
+            hmac(ring::hmac::HMAC_SHA256, secret, parameter, payload, req)?
         }
         Match::PayloadHmacSha512 { secret, parameter } => {
-            hmac(ring::hmac::HMAC_SHA512, &secret, &parameter, &payload, &req)?
+            hmac(ring::hmac::HMAC_SHA512, secret, parameter, payload, req)?
         }
         Match::IpWhitelist { ip_range } => {
             let peer_addr = match req.peer_addr() {
@@ -357,7 +356,7 @@ fn is_match(
                 None => return Err(Error::MissingPeerAddr),
             };
 
-            ip_range.contains(peer_addr.ip().into())
+            ip_range.contains(peer_addr.ip())
         }
     };
 
@@ -374,7 +373,7 @@ fn hmac(
     let key = ring::hmac::Key::new(algo, secret.as_bytes());
     let body = payload.raw();
 
-    let param = get_parameter(&parameter, &payload, &req)?;
+    let param = get_parameter(parameter, payload, req)?;
     let tag = param
         .split('=')
         .nth(1)

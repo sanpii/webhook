@@ -38,11 +38,11 @@ pub enum Error {
     Yaml(#[from] serde_yaml::Error),
 }
 
-impl Into<actix_web::http::StatusCode> for &Error {
-    fn into(self) -> actix_web::http::StatusCode {
+impl From<&Error> for actix_web::http::StatusCode {
+    fn from(error: &Error) -> Self {
         use actix_web::http::StatusCode;
 
-        match self {
+        match error {
             Error::JsonPath(_) => StatusCode::BAD_REQUEST,
             Error::Json(_) => StatusCode::BAD_REQUEST,
             Error::MissingArgument(_) => StatusCode::BAD_REQUEST,
