@@ -45,7 +45,8 @@ where
     let mut methods = Vec::new();
 
     for x in buf {
-        let method = actix_web::http::Method::try_from(x.to_uppercase().as_str()).map_err(D::Error::custom)?;
+        let method = actix_web::http::Method::try_from(x.to_uppercase().as_str())
+            .map_err(D::Error::custom)?;
         methods.push(method);
     }
 
@@ -208,7 +209,12 @@ pub(crate) enum Match {
 
 impl Match {
     pub fn is_signatrue(&self) -> bool {
-        matches!(&self, Self::PayloadHmacSha1 { .. } | Self::PayloadHmacSha256 { .. } | Self::PayloadHmacSha512 { .. })
+        matches!(
+            &self,
+            Self::PayloadHmacSha1 { .. }
+                | Self::PayloadHmacSha256 { .. }
+                | Self::PayloadHmacSha512 { .. }
+        )
     }
 }
 
