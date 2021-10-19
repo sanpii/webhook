@@ -38,7 +38,6 @@ where
 {
     use serde::de::Error;
     use serde::Deserialize;
-    use std::convert::TryFrom;
 
     let buf = Vec::<String>::deserialize(deserializer)?;
 
@@ -59,7 +58,6 @@ where
 {
     use serde::de::Error;
     use serde::Deserialize;
-    use std::convert::TryFrom;
 
     let buf = match Option::<u16>::deserialize(deserializer)? {
         Some(buf) => buf,
