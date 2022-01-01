@@ -6,12 +6,12 @@ use config::*;
 use errors::*;
 use payload::*;
 
+use clap::Parser;
 use std::collections::HashMap;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 struct Opt {
-    #[structopt(long)]
+    #[clap(long)]
     hooks: Vec<String>,
 }
 
@@ -27,7 +27,7 @@ async fn main() -> crate::Result<()> {
 
     env_logger::init();
 
-    let opt = Opt::from_args();
+    let opt = Opt::parse();
 
     let ip = std::env::var("LISTEN_IP").expect("Missing LISTEN_IP env variable");
     let port = std::env::var("LISTEN_PORT").expect("Missing LISTEN_IP env variable");
