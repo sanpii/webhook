@@ -64,10 +64,10 @@ impl actix_web::error::ResponseError for Error {
         }
 
         actix_web::HttpResponse::build(status)
-            .header(
+            .append_header((
                 actix_web::http::header::CONTENT_TYPE,
                 "text/plain; charset=utf-8",
-            )
-            .body(&self.to_string())
+            ))
+            .body(self.to_string())
     }
 }

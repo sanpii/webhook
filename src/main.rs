@@ -39,7 +39,7 @@ async fn main() -> crate::Result<()> {
 
     actix_web::HttpServer::new(move || {
         actix_web::App::new()
-            .data(data.clone())
+            .app_data(data.clone())
             .service(index)
             .service(get)
             .service(post)
@@ -262,28 +262,28 @@ fn response(hook: &Hook, output: &std::process::Output) -> actix_web::HttpRespon
     };
 
     let mut response = actix_web::HttpResponse::build(status_code);
-    response.set_header(
+    response.insert_header((
         actix_web::http::header::CONTENT_TYPE,
         "text/plain; charset=utf-8",
-    );
+    ));
 
     for header in &hook.response_headers {
-        response.set_header(&header.name, header.value.as_str());
+        response.insert_header((header.name.as_str(), header.value.as_str()));
     }
 
     let response = if hook.include_command_output_in_response {
         if output.status.success() {
             response.body(
-                &String::from_utf8(output.stdout.to_vec())
+                String::from_utf8(output.stdout.to_vec())
                     .unwrap_or_else(|_| "Invalid UTF8 output".to_string()),
             )
         } else if hook.include_command_output_in_response_on_error {
-            response.set_header(
+            response.insert_header((
                 actix_web::http::header::CONTENT_TYPE,
                 "text/plain; charset=utf-8",
-            );
+            ));
             response.body(
-                &String::from_utf8(output.stderr.to_vec())
+                String::from_utf8(output.stderr.to_vec())
                     .unwrap_or_else(|_| "Invalid UTF8 output".to_string()),
             )
         } else {
