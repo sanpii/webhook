@@ -24,7 +24,7 @@ thiserror = "1.0"
 users = "0.11.0"
 
 [dependencies.clap]
-version = "3.0"
+version = "4.0"
 features = ["derive"]
 
 [dependencies.serde]

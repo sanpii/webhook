@@ -11,7 +11,7 @@ use std::collections::HashMap;
 
 #[derive(Parser)]
 struct Opt {
-    #[clap(long)]
+    #[arg(long)]
     hooks: Vec<String>,
 }
 
