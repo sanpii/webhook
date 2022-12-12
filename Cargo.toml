@@ -7,7 +7,7 @@ license = "MIT"
 
 [dependencies]
 actix-web = "4.0"
-base64 = "0.13.0"
+base64 = "0.20.0"
 dotenv = "0.15"
 env_logger = "0.10"
 form_urlencoded = "1.0"
