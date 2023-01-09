@@ -159,7 +159,9 @@ async fn hooks(
 
         let value = get_parameter(file, &payload, &req)?;
         let contents = if file.base64encode() {
-            base64::decode(value)?
+            use base64::Engine;
+
+            base64::engine::general_purpose::STANDARD.decode(value)?
         } else {
             value.as_bytes().to_vec()
         };
