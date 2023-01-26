@@ -137,7 +137,7 @@ impl Parameter {
             Self::Environment { name, envname, .. } | Self::File { name, envname, .. } => envname
                 .clone()
                 .and_then(|x| std::env::var(x).ok())
-                .unwrap_or_else(|| format!("HOOK_{}", name)),
+                .unwrap_or_else(|| format!("HOOK_{name}")),
             _ => self.name(),
         }
     }

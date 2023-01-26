@@ -31,7 +31,7 @@ async fn main() -> crate::Result<()> {
 
     let ip = std::env::var("LISTEN_IP").expect("Missing LISTEN_IP env variable");
     let port = std::env::var("LISTEN_PORT").expect("Missing LISTEN_IP env variable");
-    let bind = format!("{}:{}", ip, port);
+    let bind = format!("{ip}:{port}");
 
     let data = Data {
         hooks: load_hooks(&opt.hooks)?,
@@ -155,7 +155,7 @@ async fn hooks(
             .command_working_directory
             .clone()
             .unwrap_or_else(|| "/tmp".to_string());
-        let path = format!("{}/{}", dir, filename);
+        let path = format!("{dir}/{filename}");
 
         let value = get_parameter(file, &payload, &req)?;
         let contents = if file.base64encode() {
