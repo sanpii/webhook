@@ -23,7 +23,7 @@ struct Data {
 #[actix_web::main]
 async fn main() -> crate::Result<()> {
     #[cfg(debug_assertions)]
-    dotenv::dotenv().ok();
+    dotenvy::dotenv().ok();
 
     env_logger::init();
 
