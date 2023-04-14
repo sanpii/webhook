@@ -4,6 +4,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     #[error("Invadid base64 content: {0}")]
     Base64(#[from] base64::DecodeError),
+    #[error("{0}")]
+    Env(#[from] envir::Error),
     #[error("Command fail: {0}")]
     Execute(String),
     #[error("{0}")]

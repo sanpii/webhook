@@ -23,14 +23,14 @@ struct Data {
 #[actix_web::main]
 async fn main() -> crate::Result<()> {
     #[cfg(debug_assertions)]
-    dotenvy::dotenv().ok();
+    envir::dotenv();
 
     env_logger::init();
 
     let opt = Opt::parse();
 
-    let ip = std::env::var("LISTEN_IP").expect("Missing LISTEN_IP env variable");
-    let port = std::env::var("LISTEN_PORT").expect("Missing LISTEN_IP env variable");
+    let ip = envir::get("LISTEN_IP")?;
+    let port = envir::get("LISTEN_PORT")?;
     let bind = format!("{ip}:{port}");
 
     let data = Data {
