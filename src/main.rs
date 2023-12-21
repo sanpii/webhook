@@ -176,12 +176,11 @@ async fn hooks(
 
     #[cfg(unix)]
     if let Some(username) = &hook.user {
-        use sysinfo::{SystemExt, UserExt};
         use std::os::unix::process::CommandExt;
 
-        let s = sysinfo::System::new_all();
+        let users = sysinfo::Users::new();
 
-        match s.users().iter().find(|user| user.name() == username) {
+        match users.list().iter().find(|user| user.name() == username) {
             Some(user) => {
                 command.uid(**user.id());
                 command.gid(*user.group_id());
