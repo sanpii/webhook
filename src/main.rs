@@ -1,3 +1,5 @@
+#[warn(warnings)]
+
 mod config;
 mod errors;
 mod payload;
