@@ -185,11 +185,11 @@ async fn hooks(
                 command.uid(**user.id());
                 command.gid(*user.group_id());
             }
-            None => log::warn!("Unknow user {}", username),
+            None => log::warn!("Unknow user {username}"),
         }
     }
 
-    log::debug!("Execute {:?}", command);
+    log::debug!("Execute {command:?}");
 
     let output = command.output()?;
     let response = response(hook, &output);
