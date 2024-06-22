@@ -24,10 +24,7 @@ struct Data {
 
 #[actix_web::main]
 async fn main() -> crate::Result {
-    #[cfg(debug_assertions)]
-    envir::dotenv();
-
-    env_logger::init();
+    envir::init();
 
     let opt = Opt::parse();
 
