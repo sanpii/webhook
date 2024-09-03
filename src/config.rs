@@ -14,7 +14,7 @@ pub(crate) struct Hook {
     pub response_message: Option<String>,
     #[serde(default)]
     pub response_headers: Vec<Header>,
-    #[serde(default, deserialize_with = "de_status_code")]
+    #[serde(default, deserialize_with = "de::status_code")]
     pub success_http_response_code: Option<actix_web::http::StatusCode>,
     pub incoming_payload_content_type: Option<String>,
     #[serde(default, with = "serde_yaml::with::singleton_map")]
@@ -23,51 +23,55 @@ pub(crate) struct Hook {
     pub pass_environment_to_command: Vec<Parameter>,
     #[serde(default, with = "serde_yaml::with::singleton_map")]
     parse_parameters_as_json: Vec<Parameter>,
-    #[serde(default, deserialize_with = "de_method")]
+    #[serde(default, deserialize_with = "de::method")]
     pub http_methods: Vec<actix_web::http::Method>,
     #[serde(with = "serde_yaml::with::singleton_map")]
     pub trigger_rule: Option<TriggerRules>,
-    #[serde(default, deserialize_with = "de_status_code")]
+    #[serde(default, deserialize_with = "de::status_code")]
     pub trigger_rule_mismatch_http_response_code: Option<actix_web::http::StatusCode>,
     #[serde(default)]
     pub trigger_signature_soft_failures: bool,
 }
 
-fn de_method<'de, D>(deserializer: D) -> Result<Vec<actix_web::http::Method>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    use serde::de::Error;
-    use serde::Deserialize;
+mod de {
+    pub fn method<'de, D>(deserializer: D) -> Result<Vec<actix_web::http::Method>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+        use serde::Deserialize;
 
-    let buf = Vec::<String>::deserialize(deserializer)?;
+        let buf = Vec::<String>::deserialize(deserializer)?;
 
-    let mut methods = Vec::new();
+        let mut methods = Vec::new();
 
-    for x in buf {
-        let method = actix_web::http::Method::try_from(x.to_uppercase().as_str())
-            .map_err(D::Error::custom)?;
-        methods.push(method);
+        for x in buf {
+            let method = actix_web::http::Method::try_from(x.to_uppercase().as_str())
+                .map_err(D::Error::custom)?;
+            methods.push(method);
+        }
+
+        Ok(methods)
     }
 
-    Ok(methods)
-}
+    pub fn status_code<'de, D>(
+        deserializer: D,
+    ) -> Result<Option<actix_web::http::StatusCode>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+        use serde::Deserialize;
 
-fn de_status_code<'de, D>(deserializer: D) -> Result<Option<actix_web::http::StatusCode>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    use serde::de::Error;
-    use serde::Deserialize;
+        let buf = match Option::<u16>::deserialize(deserializer)? {
+            Some(buf) => buf,
+            None => return Ok(None),
+        };
 
-    let buf = match Option::<u16>::deserialize(deserializer)? {
-        Some(buf) => buf,
-        None => return Ok(None),
-    };
+        let status_code = actix_web::http::StatusCode::try_from(buf).map_err(D::Error::custom)?;
 
-    let status_code = actix_web::http::StatusCode::try_from(buf).map_err(D::Error::custom)?;
-
-    Ok(Some(status_code))
+        Ok(Some(status_code))
+    }
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -83,7 +87,7 @@ pub(crate) enum Argument {
     Partial(Parameter),
     Entire {
         #[serde(with = "serde_yaml::with::singleton_map")]
-        source: Source
+        source: Source,
     },
 }
 
@@ -218,9 +222,7 @@ pub(crate) enum Match {
         parameter: Parameter,
     },
     #[serde(rename_all = "kebab-case")]
-    IpWhitelist {
-        ip_range: ipnetwork::IpNetwork,
-    },
+    IpWhitelist { ip_range: ipnetwork::IpNetwork },
 }
 
 impl Match {
