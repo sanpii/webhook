@@ -37,7 +37,7 @@ pub enum Error {
     #[error("Unsupported request key: {0}")]
     UnsupportedRequestKey(String),
     #[error("{0}")]
-    Yaml(#[from] serde_yaml::Error),
+    Yaml(#[from] serde_yaml_ng::Error),
 }
 
 impl From<&Error> for actix_web::http::StatusCode {

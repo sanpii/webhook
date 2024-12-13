@@ -5,7 +5,7 @@ pub(crate) struct Hook {
     pub user: Option<String>,
     pub execute_command: String,
     pub command_working_directory: Option<String>,
-    #[serde(default, with = "serde_yaml::with::singleton_map")]
+    #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
     pub pass_arguments_to_command: Vec<Argument>,
     #[serde(default)]
     pub include_command_output_in_response: bool,
@@ -17,15 +17,15 @@ pub(crate) struct Hook {
     #[serde(default, deserialize_with = "de::status_code")]
     pub success_http_response_code: Option<actix_web::http::StatusCode>,
     pub incoming_payload_content_type: Option<String>,
-    #[serde(default, with = "serde_yaml::with::singleton_map")]
+    #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
     pub pass_file_to_command: Vec<Parameter>,
-    #[serde(default, with = "serde_yaml::with::singleton_map")]
+    #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
     pub pass_environment_to_command: Vec<Parameter>,
-    #[serde(default, with = "serde_yaml::with::singleton_map")]
+    #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
     parse_parameters_as_json: Vec<Parameter>,
     #[serde(default, deserialize_with = "de::method")]
     pub http_methods: Vec<actix_web::http::Method>,
-    #[serde(with = "serde_yaml::with::singleton_map")]
+    #[serde(with = "serde_yaml_ng::with::singleton_map")]
     pub trigger_rule: Option<TriggerRules>,
     #[serde(default, deserialize_with = "de::status_code")]
     pub trigger_rule_mismatch_http_response_code: Option<actix_web::http::StatusCode>,
@@ -83,10 +83,10 @@ pub(crate) struct Header {
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(untagged, deny_unknown_fields)]
 pub(crate) enum Argument {
-    #[serde(with = "serde_yaml::with::singleton_map")]
+    #[serde(with = "serde_yaml_ng::with::singleton_map")]
     Partial(Parameter),
     Entire {
-        #[serde(with = "serde_yaml::with::singleton_map")]
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
         source: Source,
     },
 }
@@ -108,7 +108,7 @@ pub(crate) enum Source {
 #[serde(untagged, deny_unknown_fields)]
 pub(crate) enum Parameter {
     File {
-        #[serde(with = "serde_yaml::with::singleton_map")]
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
         source: Source,
         name: String,
         envname: Option<String>,
@@ -116,12 +116,12 @@ pub(crate) enum Parameter {
     },
     Environment {
         envname: Option<String>,
-        #[serde(with = "serde_yaml::with::singleton_map")]
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
         source: Source,
         name: String,
     },
     Param {
-        #[serde(with = "serde_yaml::with::singleton_map")]
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
         source: Source,
         name: String,
     },
@@ -166,20 +166,20 @@ impl Parameter {
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) enum TriggerRules {
-    #[serde(with = "serde_yaml::with::singleton_map")]
+    #[serde(with = "serde_yaml_ng::with::singleton_map")]
     Match(Match),
-    #[serde(with = "serde_yaml::with::singleton_map")]
+    #[serde(with = "serde_yaml_ng::with::singleton_map")]
     Not(Match),
-    #[serde(with = "serde_yaml::with::singleton_map")]
+    #[serde(with = "serde_yaml_ng::with::singleton_map")]
     And(Vec<TriggerRule>),
-    #[serde(with = "serde_yaml::with::singleton_map")]
+    #[serde(with = "serde_yaml_ng::with::singleton_map")]
     Or(Vec<TriggerRule>),
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) enum TriggerRule {
-    #[serde(with = "serde_yaml::with::singleton_map")]
+    #[serde(with = "serde_yaml_ng::with::singleton_map")]
     Match(Match),
 }
 
@@ -198,27 +198,27 @@ impl std::ops::Deref for TriggerRule {
 pub(crate) enum Match {
     Value {
         value: String,
-        #[serde(with = "serde_yaml::with::singleton_map")]
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
         parameter: Parameter,
     },
     Regex {
         regex: String,
-        #[serde(with = "serde_yaml::with::singleton_map")]
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
         parameter: Parameter,
     },
     PayloadHmacSha1 {
         secret: String,
-        #[serde(with = "serde_yaml::with::singleton_map")]
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
         parameter: Parameter,
     },
     PayloadHmacSha256 {
         secret: String,
-        #[serde(with = "serde_yaml::with::singleton_map")]
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
         parameter: Parameter,
     },
     PayloadHmacSha512 {
         secret: String,
-        #[serde(with = "serde_yaml::with::singleton_map")]
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
         parameter: Parameter,
     },
     #[serde(rename_all = "kebab-case")]
@@ -240,8 +240,8 @@ impl Match {
 mod test {
     #[test]
     fn config() {
-        let hooks: Result<Vec<crate::config::Hook>, serde_yaml::Error> =
-            serde_yaml::from_str(include_str!("../hooks.yaml"));
+        let hooks: Result<Vec<crate::config::Hook>, serde_yaml_ng::Error> =
+            serde_yaml_ng::from_str(include_str!("../hooks.yaml"));
 
         if let Err(err) = &hooks {
             dbg!(err);

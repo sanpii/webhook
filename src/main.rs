@@ -205,7 +205,7 @@ fn load_hooks(files: &[String]) -> crate::Result<Vec<Hook>> {
 
     for file in files {
         let contents = std::fs::read(file)?;
-        let mut hook: Vec<Hook> = serde_yaml::from_str(&String::from_utf8(contents)?)?;
+        let mut hook: Vec<Hook> = serde_yaml_ng::from_str(&String::from_utf8(contents)?)?;
 
         hooks.append(&mut hook);
     }
