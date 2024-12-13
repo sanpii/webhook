@@ -60,9 +60,9 @@ impl actix_web::error::ResponseError for Error {
         let status: actix_web::http::StatusCode = self.into();
 
         if status.is_client_error() {
-            log::warn!("{}", self);
+            log::warn!("{self}");
         } else if status.is_server_error() {
-            log::error!("{}", self);
+            log::error!("{self}");
         }
 
         actix_web::HttpResponse::build(status)
