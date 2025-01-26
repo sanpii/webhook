@@ -14,7 +14,11 @@ pub(crate) struct Hook {
     pub response_message: Option<String>,
     #[serde(default)]
     pub response_headers: Vec<Header>,
-    #[serde(default, deserialize_with = "de::status_code", serialize_with = "se::status_code")]
+    #[serde(
+        default,
+        deserialize_with = "de::status_code",
+        serialize_with = "se::status_code"
+    )]
     pub success_http_response_code: Option<actix_web::http::StatusCode>,
     pub incoming_payload_content_type: Option<String>,
     #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
@@ -23,11 +27,19 @@ pub(crate) struct Hook {
     pub pass_environment_to_command: Vec<Parameter>,
     #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
     parse_parameters_as_json: Vec<Parameter>,
-    #[serde(default, deserialize_with = "de::method", serialize_with = "se::method")]
+    #[serde(
+        default,
+        deserialize_with = "de::method",
+        serialize_with = "se::method"
+    )]
     pub http_methods: Vec<actix_web::http::Method>,
     #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
     pub trigger_rule: Option<TriggerRules>,
-    #[serde(default, deserialize_with = "de::status_code", serialize_with = "se::status_code")]
+    #[serde(
+        default,
+        deserialize_with = "de::status_code",
+        serialize_with = "se::status_code"
+    )]
     pub trigger_rule_mismatch_http_response_code: Option<actix_web::http::StatusCode>,
     #[serde(default)]
     pub trigger_signature_soft_failures: bool,
@@ -75,7 +87,10 @@ mod de {
 }
 
 mod se {
-    pub fn method<S>(value: &Vec<actix_web::http::Method>, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+    pub fn method<S>(value: &Vec<actix_web::http::Method>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
         use serde::ser::SerializeSeq as _;
 
         let mut seq = serializer.serialize_seq(Some(value.len()))?;
@@ -86,7 +101,13 @@ mod se {
         seq.end()
     }
 
-    pub fn status_code<S>(value: &Option<actix_web::http::StatusCode>, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+    pub fn status_code<S>(
+        value: &Option<actix_web::http::StatusCode>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
         match value {
             Some(v) => serializer.serialize_some(&v.as_u16()),
             None => serializer.serialize_none(),
@@ -166,9 +187,9 @@ impl Parameter {
 
     pub fn envname(&self) -> String {
         match self {
-            Self::Environment { name, envname, .. } | Self::File { name, envname, .. } => envname
-                .clone()
-                .unwrap_or_else(|| format!("HOOK_{name}")),
+            Self::Environment { name, envname, .. } | Self::File { name, envname, .. } => {
+                envname.clone().unwrap_or_else(|| format!("HOOK_{name}"))
+            }
             _ => self.name(),
         }
     }
