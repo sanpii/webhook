@@ -177,7 +177,7 @@ async fn hooks(
     if let Some(username) = &hook.user {
         use std::os::unix::process::CommandExt;
 
-        let users = sysinfo::Users::new();
+        let users = sysinfo::Users::new_with_refreshed_list();
 
         match users.list().iter().find(|user| user.name() == username) {
             Some(user) => {
