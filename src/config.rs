@@ -197,18 +197,16 @@ pub(crate) enum TriggerRules {
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub(crate) enum TriggerRule {
-    #[serde(with = "serde_yaml_ng::with::singleton_map")]
-    Match(Match),
+pub(crate) struct TriggerRule {
+    #[serde(rename = "match", with = "serde_yaml_ng::with::singleton_map")]
+    r#match: Match,
 }
 
 impl std::ops::Deref for TriggerRule {
     type Target = Match;
 
     fn deref(&self) -> &Match {
-        match self {
-            Self::Match(r#match) => r#match,
-        }
+        &self.r#match
     }
 }
 
