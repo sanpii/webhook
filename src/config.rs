@@ -25,7 +25,7 @@ pub(crate) struct Hook {
     parse_parameters_as_json: Vec<Parameter>,
     #[serde(default, deserialize_with = "de::method", serialize_with = "se::method")]
     pub http_methods: Vec<actix_web::http::Method>,
-    #[serde(with = "serde_yaml_ng::with::singleton_map")]
+    #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
     pub trigger_rule: Option<TriggerRules>,
     #[serde(default, deserialize_with = "de::status_code", serialize_with = "se::status_code")]
     pub trigger_rule_mismatch_http_response_code: Option<actix_web::http::StatusCode>,
