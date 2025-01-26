@@ -305,7 +305,6 @@ fn should_trigger(
     req: &actix_web::HttpRequest,
 ) -> crate::Result<bool> {
     if !hook.http_methods.is_empty() && !hook.http_methods.contains(req.method()) {
-        dbg!(&hook.http_methods, &req.method());
         return Ok(false);
     }
 
