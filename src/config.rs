@@ -1,4 +1,4 @@
-#[derive(Clone, Debug, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) struct Hook {
     pub id: String,
@@ -14,7 +14,7 @@ pub(crate) struct Hook {
     pub response_message: Option<String>,
     #[serde(default)]
     pub response_headers: Vec<Header>,
-    #[serde(default, deserialize_with = "de::status_code")]
+    #[serde(default, deserialize_with = "de::status_code", serialize_with = "se::status_code")]
     pub success_http_response_code: Option<actix_web::http::StatusCode>,
     pub incoming_payload_content_type: Option<String>,
     #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
@@ -23,11 +23,11 @@ pub(crate) struct Hook {
     pub pass_environment_to_command: Vec<Parameter>,
     #[serde(default, with = "serde_yaml_ng::with::singleton_map")]
     parse_parameters_as_json: Vec<Parameter>,
-    #[serde(default, deserialize_with = "de::method")]
+    #[serde(default, deserialize_with = "de::method", serialize_with = "se::method")]
     pub http_methods: Vec<actix_web::http::Method>,
     #[serde(with = "serde_yaml_ng::with::singleton_map")]
     pub trigger_rule: Option<TriggerRules>,
-    #[serde(default, deserialize_with = "de::status_code")]
+    #[serde(default, deserialize_with = "de::status_code", serialize_with = "se::status_code")]
     pub trigger_rule_mismatch_http_response_code: Option<actix_web::http::StatusCode>,
     #[serde(default)]
     pub trigger_signature_soft_failures: bool,
@@ -74,13 +74,33 @@ mod de {
     }
 }
 
-#[derive(Clone, Debug, serde::Deserialize)]
+mod se {
+    pub fn method<S>(value: &Vec<actix_web::http::Method>, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+        use serde::ser::SerializeSeq as _;
+
+        let mut seq = serializer.serialize_seq(Some(value.len()))?;
+
+        for e in value {
+            seq.serialize_element(e.as_str())?;
+        }
+        seq.end()
+    }
+
+    pub fn status_code<S>(value: &Option<actix_web::http::StatusCode>, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+        match value {
+            Some(v) => serializer.serialize_some(&v.as_u16()),
+            None => serializer.serialize_none(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub(crate) struct Header {
     pub name: String,
     pub value: String,
 }
 
-#[derive(Clone, Debug, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(untagged, deny_unknown_fields)]
 pub(crate) enum Argument {
     #[serde(with = "serde_yaml_ng::with::singleton_map")]
@@ -91,7 +111,7 @@ pub(crate) enum Argument {
     },
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq, serde::Deserialize)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) enum Source {
     EntireHeader,
@@ -104,7 +124,7 @@ pub(crate) enum Source {
     Url,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq, serde::Deserialize)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(untagged, deny_unknown_fields)]
 pub(crate) enum Parameter {
     File {
@@ -162,7 +182,7 @@ impl Parameter {
     }
 }
 
-#[derive(Clone, Debug, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) enum TriggerRules {
     #[serde(with = "serde_yaml_ng::with::singleton_map")]
@@ -175,7 +195,7 @@ pub(crate) enum TriggerRules {
     Or(Vec<TriggerRule>),
 }
 
-#[derive(Clone, Debug, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) enum TriggerRule {
     #[serde(with = "serde_yaml_ng::with::singleton_map")]
@@ -192,7 +212,7 @@ impl std::ops::Deref for TriggerRule {
     }
 }
 
-#[derive(Clone, Debug, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(tag = "type", rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) enum Match {
     Value {
