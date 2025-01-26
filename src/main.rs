@@ -38,7 +38,7 @@ async fn main() -> crate::Result {
 
     actix_web::HttpServer::new(move || {
         actix_web::App::new()
-            .app_data(data.clone())
+            .app_data(actix_web::web::Data::new(data.clone()))
             .service(index)
             .service(get)
             .service(post)
