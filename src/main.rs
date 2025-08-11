@@ -274,7 +274,7 @@ fn response(hook: &Hook, output: &std::process::Output) -> actix_web::HttpRespon
         response.insert_header((header.name.as_str(), header.value.as_str()));
     }
 
-    let response = if hook.include_command_output_in_response {
+    if hook.include_command_output_in_response {
         if output.status.success() {
             response.body(
                 String::from_utf8(output.stdout.to_vec())
@@ -294,9 +294,7 @@ fn response(hook: &Hook, output: &std::process::Output) -> actix_web::HttpRespon
         }
     } else {
         response.body(hook.response_message.clone().unwrap_or_default())
-    };
-
-    response
+    }
 }
 
 fn should_trigger(
