@@ -50,8 +50,8 @@ mod de {
     where
         D: serde::Deserializer<'de>,
     {
-        use serde::de::Error;
         use serde::Deserialize;
+        use serde::de::Error;
 
         let buf = Vec::<String>::deserialize(deserializer)?;
 
@@ -72,8 +72,8 @@ mod de {
     where
         D: serde::Deserializer<'de>,
     {
-        use serde::de::Error;
         use serde::Deserialize;
+        use serde::de::Error;
 
         let buf = match Option::<u16>::deserialize(deserializer)? {
             Some(buf) => buf,

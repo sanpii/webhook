@@ -47,7 +47,7 @@ impl Payload {
                 json.dot_get(name)?
             }
             Type::Unknow(content_type) => {
-                return Err(crate::Error::UnsuportedContentType(content_type.clone()))
+                return Err(crate::Error::UnsuportedContentType(content_type.clone()));
             }
         };
 
@@ -58,7 +58,7 @@ impl Payload {
         let json = match &self.parsed {
             Type::Json(json) => json,
             Type::Unknow(content_type) => {
-                return Err(crate::Error::UnsuportedContentType(content_type.clone()))
+                return Err(crate::Error::UnsuportedContentType(content_type.clone()));
             }
         };
 
