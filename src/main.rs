@@ -337,18 +337,14 @@ fn is_match(
 
             re.is_match(&value)
         }
-        Match::PayloadHmacSha1 { secret, parameter } => hmac(
-            ring::hmac::HMAC_SHA1_FOR_LEGACY_USE_ONLY,
-            secret,
-            parameter,
-            payload,
-            req,
-        )?,
+        Match::PayloadHmacSha1 { secret, parameter } => {
+            hmac::<sha1::Sha1>(secret, parameter, payload, req)?
+        }
         Match::PayloadHmacSha256 { secret, parameter } => {
-            hmac(ring::hmac::HMAC_SHA256, secret, parameter, payload, req)?
+            hmac::<sha2::Sha256>(secret, parameter, payload, req)?
         }
         Match::PayloadHmacSha512 { secret, parameter } => {
-            hmac(ring::hmac::HMAC_SHA512, secret, parameter, payload, req)?
+            hmac::<sha2::Sha512>(secret, parameter, payload, req)?
         }
         Match::IpWhitelist { ip_range } => {
             let peer_addr = match req.peer_addr() {
@@ -363,14 +359,27 @@ fn is_match(
     Ok(is_match)
 }
 
-fn hmac(
-    algo: ring::hmac::Algorithm,
+fn hmac<D>(
     secret: &str,
     parameter: &Parameter,
     payload: &Payload,
     req: &actix_web::HttpRequest,
-) -> crate::Result<bool> {
-    let key = ring::hmac::Key::new(algo, secret.as_bytes());
+) -> crate::Result<bool>
+where
+    D: hmac::digest::core_api::CoreProxy,
+    <D as hmac::digest::core_api::CoreProxy>::Core: hmac::digest::HashMarker
+        + hmac::digest::core_api::UpdateCore
+        + hmac::digest::core_api::BufferKindUser<BufferKind = hmac::digest::block_buffer::Eager>
+        + hmac::digest::core_api::FixedOutputCore
+        + Clone
+        + Default,
+    <D::Core as hmac::digest::core_api::BlockSizeUser>::BlockSize: hmac::digest::typenum::IsLess<hmac::digest::consts::U256>,
+    hmac::digest::typenum::Le<<D::Core as hmac::digest::core_api::BlockSizeUser>::BlockSize, hmac::digest::consts::U256>: hmac::digest::typenum::NonZero,
+
+{
+    use hmac::Mac as _;
+
+    let mut key: hmac::Hmac<D> = hmac::Hmac::new_from_slice(secret.as_bytes()).unwrap();
     let body = payload.raw();
 
     let param = get_parameter(parameter, payload, req)?;
@@ -380,7 +389,8 @@ fn hmac(
         .ok_or(Error::InvalidHmac)
         .and_then(|x| hex::decode(x).map_err(|_| Error::InvalidHmac))?;
 
-    let valid = ring::hmac::verify(&key, body, &tag).is_ok();
+    key.update(body);
+    let valid = key.verify_slice(&tag).is_ok();
 
     Ok(valid)
 }
