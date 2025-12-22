@@ -65,3 +65,9 @@ impl Payload {
         Ok(json)
     }
 }
+
+impl ToString for Payload {
+    fn to_string(&self) -> String {
+        String::from_utf8_lossy(&self.raw).to_string()
+    }
+}

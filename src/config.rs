@@ -135,7 +135,7 @@ pub(crate) enum Argument {
 #[derive(Clone, Debug, Eq, Hash, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub(crate) enum Source {
-    EntireHeader,
+    EntireHeaders,
     EntireQuery,
     EntirePayload,
     Header,

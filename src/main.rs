@@ -116,7 +116,7 @@ async fn hooks(
         let value = match arg {
             Argument::Partial(param) => get_parameter(param, &payload, &req)?,
             Argument::Entire { source } => match source {
-                Source::EntireHeader => {
+                Source::EntireHeaders => {
                     let headers = req
                         .headers()
                         .into_iter()
@@ -249,7 +249,24 @@ fn get_parameter(
                 .1
                 .into_owned()
         }
-        _ => unreachable!(),
+        Source::EntirePayload => {
+            payload.to_string()
+        }
+        Source::EntireHeaders => {
+            let map = req.headers().into_iter()
+                .map(|(k, v)| (k.to_string(), v.to_str().unwrap_or_default()))
+                .collect::<std::collections::BTreeMap<_, _>>();
+
+            serde_json::to_string(&map)?
+        }
+        Source::EntireQuery => {
+            let map = req.full_url()
+                .query_pairs()
+                .map(|(k, v)| (k.to_string(), v.to_string()))
+                .collect::<std::collections::BTreeMap<_, _>>();
+
+            serde_json::to_string(&map)?
+        }
     };
 
     Ok(value)
