@@ -249,18 +249,19 @@ fn get_parameter(
                 .1
                 .into_owned()
         }
-        Source::EntirePayload => {
-            payload.to_string()
-        }
+        Source::EntirePayload => payload.to_string(),
         Source::EntireHeaders => {
-            let map = req.headers().into_iter()
+            let map = req
+                .headers()
+                .into_iter()
                 .map(|(k, v)| (k.to_string(), v.to_str().unwrap_or_default()))
                 .collect::<std::collections::BTreeMap<_, _>>();
 
             serde_json::to_string(&map)?
         }
         Source::EntireQuery => {
-            let map = req.full_url()
+            let map = req
+                .full_url()
                 .query_pairs()
                 .map(|(k, v)| (k.to_string(), v.to_string()))
                 .collect::<std::collections::BTreeMap<_, _>>();
@@ -390,9 +391,12 @@ where
         + hmac::digest::core_api::FixedOutputCore
         + Clone
         + Default,
-    <D::Core as hmac::digest::core_api::BlockSizeUser>::BlockSize: hmac::digest::typenum::IsLess<hmac::digest::consts::U256>,
-    hmac::digest::typenum::Le<<D::Core as hmac::digest::core_api::BlockSizeUser>::BlockSize, hmac::digest::consts::U256>: hmac::digest::typenum::NonZero,
-
+    <D::Core as hmac::digest::core_api::BlockSizeUser>::BlockSize:
+        hmac::digest::typenum::IsLess<hmac::digest::consts::U256>,
+    hmac::digest::typenum::Le<
+        <D::Core as hmac::digest::core_api::BlockSizeUser>::BlockSize,
+        hmac::digest::consts::U256,
+    >: hmac::digest::typenum::NonZero,
 {
     use hmac::Mac as _;
 
