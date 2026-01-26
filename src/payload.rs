@@ -66,8 +66,10 @@ impl Payload {
     }
 }
 
-impl ToString for Payload {
-    fn to_string(&self) -> String {
-        String::from_utf8_lossy(&self.raw).to_string()
+impl std::fmt::Display for Payload {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = String::from_utf8_lossy(&self.raw);
+
+        f.write_str(&s)
     }
 }
