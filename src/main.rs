@@ -333,7 +333,7 @@ fn should_trigger(
                 .try_fold(true, |acc, x| Ok(acc && is_match(x, payload, req)?)),
             TriggerRules::Or(matches) => matches.iter().try_fold(false, |acc, x| {
                 Ok(acc
-                    || (x.is_signatrue() && hook.trigger_signature_soft_failures)
+                    || (x.is_signature() && hook.trigger_signature_soft_failures)
                     || is_match(x, payload, req)?)
             }),
         }

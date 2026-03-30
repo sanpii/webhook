@@ -264,7 +264,7 @@ pub(crate) enum Match {
 }
 
 impl Match {
-    pub fn is_signatrue(&self) -> bool {
+    pub fn is_signature(&self) -> bool {
         matches!(
             &self,
             Self::PayloadHmacSha1 { .. }
