@@ -384,21 +384,10 @@ fn hmac<D>(
     req: &actix_web::HttpRequest,
 ) -> crate::Result<bool>
 where
-    D: hmac::digest::core_api::CoreProxy,
-    <D as hmac::digest::core_api::CoreProxy>::Core: hmac::digest::HashMarker
-        + hmac::digest::core_api::UpdateCore
-        + hmac::digest::core_api::BufferKindUser<BufferKind = hmac::digest::block_buffer::Eager>
-        + hmac::digest::core_api::FixedOutputCore
-        + Clone
-        + Default,
-    <D::Core as hmac::digest::core_api::BlockSizeUser>::BlockSize:
-        hmac::digest::typenum::IsLess<hmac::digest::consts::U256>,
-    hmac::digest::typenum::Le<
-        <D::Core as hmac::digest::core_api::BlockSizeUser>::BlockSize,
-        hmac::digest::consts::U256,
-    >: hmac::digest::typenum::NonZero,
+    D: hmac::EagerHash
 {
     use hmac::Mac as _;
+    use hmac::KeyInit as _;
 
     let mut key: hmac::Hmac<D> = hmac::Hmac::new_from_slice(secret.as_bytes()).unwrap();
     let body = payload.raw();
