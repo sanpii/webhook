@@ -63,7 +63,7 @@
   trigger-rule:
     and:
       - match:
-          type: payload-hmac-sha256
+          type: payload-hmac-sha3-256
           secret: mysecret
           parameter:
             source: header

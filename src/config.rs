@@ -259,6 +259,16 @@ pub(crate) enum Match {
         #[serde(with = "serde_yaml_ng::with::singleton_map")]
         parameter: Parameter,
     },
+    PayloadHmacSha3_256 {
+        secret: String,
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
+        parameter: Parameter,
+    },
+    PayloadHmacSha3_512 {
+        secret: String,
+        #[serde(with = "serde_yaml_ng::with::singleton_map")]
+        parameter: Parameter,
+    },
     #[serde(rename_all = "kebab-case")]
     IpWhitelist { ip_range: ipnetwork::IpNetwork },
 }

@@ -364,6 +364,12 @@ fn is_match(
         Match::PayloadHmacSha512 { secret, parameter } => {
             hmac::<sha2::Sha512>(secret, parameter, payload, req)?
         }
+        Match::PayloadHmacSha3_256 { secret, parameter } => {
+            hmac::<sha3::Sha3_256>(secret, parameter, payload, req)?
+        }
+        Match::PayloadHmacSha3_512 { secret, parameter } => {
+            hmac::<sha3::Sha3_512>(secret, parameter, payload, req)?
+        }
         Match::IpWhitelist { ip_range } => {
             let peer_addr = match req.peer_addr() {
                 Some(peer_addr) => peer_addr,
