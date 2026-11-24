@@ -29,6 +29,8 @@ pub enum Error {
     #[error("Invalid payload: {0}")]
     Payload(#[from] actix_web::error::PayloadError),
     #[error("{0}")]
+    Sysinfo(#[from] sysinfo::Error),
+    #[error("{0}")]
     Utf8(#[from] std::string::FromUtf8Error),
     #[error("Unauthorized")]
     Unauthorized(actix_web::http::StatusCode),
